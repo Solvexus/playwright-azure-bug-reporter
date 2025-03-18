@@ -1,6 +1,6 @@
 {
   "name": "@solvexus/playwright-azure-bug-reporter",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Playwright Azure Bug Reporter",
   "main": "./dist/playwright-azure-bug-reporter.js",
   "types": "./dist/playwright-azure-bug-reporter.d.ts",
