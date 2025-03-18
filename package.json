@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "description": "Playwright Azure Bug Reporter",
   "main": "./dist/playwright-azure-bug-reporter.js",
-  "types": "./dist/playwright-azure-reporter.d.ts",
+  "types": "./dist/playwright-azure-bug-reporter.d.ts",
   "scripts": {
     "build": "tsc"
   },
