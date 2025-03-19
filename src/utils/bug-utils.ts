@@ -7,17 +7,31 @@ export async function createBug(
   token: string | undefined,
   payload: any[]
 ): Promise<number> {
-  const response = await axios.post(
-    `https://dev.azure.com/${organization}/${project}/_apis/wit/workitems/$Bug?api-version=7.0`,
-    payload,
-    {
-      headers: {
-        "Content-Type": "application/json-patch+json",
-        ...getAuthHeader(token),
-      },
+  try {
+    const response = await axios.post(
+      `https://dev.azure.com/${organization}/${project}/_apis/wit/workitems/$Bug?api-version=7.0`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json-patch+json",
+          ...getAuthHeader(token),
+        },
+      }
+    );
+    return response.data.id;
+  } catch (error: any) {
+    if (
+      error.response?.status === 400 &&
+      error.response?.data?.typeKey ===
+        "WorkItemFieldInvalidTreeNameException" &&
+      error.response?.data?.message?.includes("System.AreaPath")
+    ) {
+      console.error(
+        "Area path is invalid. It doesn't exist or has the wrong format. Enable allowAreaPathCreation to create missing area paths automatically"
+      );
     }
-  );
-  return response.data.id;
+    throw error;
+  }
 }
 
 export function createBugPayload(

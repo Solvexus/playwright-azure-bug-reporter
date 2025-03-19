@@ -12,6 +12,7 @@ import {
 import { createAreaPathIfNotExists } from "./utils/area-path-utils";
 import type { TestCase, TestResult } from "@playwright/test/reporter";
 import { BugCreationPolicy } from "./reporter-config";
+import * as crypto from "crypto";
 
 export class BugPoster {
   private organization: string;
@@ -27,6 +28,9 @@ export class BugPoster {
   private assignedTo?: string;
   private severity: string;
   private bugCreationPolicy: BugCreationPolicy;
+  private bugSignature: string;
+  private reproSteps: string;
+  private allowAreaPathCreation: boolean;
 
   constructor(
     organization: string,
@@ -41,6 +45,9 @@ export class BugPoster {
     iterationPath: string,
     severity: string,
     bugCreationPolicy: BugCreationPolicy,
+    bugSignature: string,
+    reproSteps: string,
+    allowAreaPathCreation: boolean,
     assignedTo?: string
   ) {
     this.organization = organization;
@@ -56,29 +63,29 @@ export class BugPoster {
     this.assignedTo = assignedTo;
     this.severity = severity;
     this.bugCreationPolicy = bugCreationPolicy;
+    this.bugSignature = crypto
+      .createHash("md5")
+      .update(bugSignature)
+      .digest("hex");
+    this.reproSteps = reproSteps;
+    this.allowAreaPathCreation = allowAreaPathCreation;
   }
 
   async postBug(test: TestCase, result: TestResult) {
-    const bugSignature = `Automated test ${test.title}`;
+    const bugSignature = this.bugSignature;
     const title = this.title;
     console.log(`Creating bug for test: ${test.title}`);
 
-    const reproSteps = `
-      <div>
-        <b>Test File:</b> ${test.location?.file}<br>
-        <b>Line:</b> ${test.location?.line}<br>
-        <b>Status:</b> ${result.status}<br>
-        <b>Error:</b> ${result.error?.message || "N/A"}<br>
-        <b>Stack:</b><br><pre>${result.error?.stack || "N/A"}</pre>
-      </div>
-    `.trim();
+    const reproSteps = this.reproSteps;
 
-    await createAreaPathIfNotExists(
-      this.organization,
-      this.project,
-      this.token,
-      this.areaPath
-    );
+    if (this.allowAreaPathCreation) {
+      await createAreaPathIfNotExists(
+        this.organization,
+        this.project,
+        this.token,
+        this.areaPath
+      );
+    }
 
     const resolvedIterationPath = await resolveIterationPath(
       this.organization,
@@ -94,18 +101,25 @@ export class BugPoster {
       this.customFieldName
     );
 
-    if (!fieldExists && this.allowFieldCreation) {
-      try {
-        await createCustomField(
-          this.organization,
-          this.project,
-          this.token,
-          this.customFieldName
-        );
-      } catch (error) {
+    if (!fieldExists) {
+      if (this.allowFieldCreation) {
+        try {
+          await createCustomField(
+            this.organization,
+            this.project,
+            this.token,
+            this.customFieldName
+          );
+        } catch (error) {
+          console.error(
+            `Failed to create custom field '${this.customFieldName}':`,
+            error
+          );
+          return;
+        }
+      } else {
         console.error(
-          `Failed to create custom field '${this.customFieldName}':`,
-          error
+          `Custom field '${this.customFieldName}' does not exist. Enable 'allowFieldCreation' to create it.`
         );
         return;
       }

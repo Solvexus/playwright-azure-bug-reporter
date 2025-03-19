@@ -125,4 +125,26 @@ export interface AzureBugReporterConfig {
    * Defaults to "if-none-open".
    */
   bugCreationPolicy?: ValueOrFunction<BugCreationPolicy>;
+
+  /**
+   * Custom function to generate a unique bug signature.
+   * This signature is used to detect duplicate bugs.
+   * Can be a static string or a function that resolves dynamically.
+   * Default: Uses test title as signature
+   */
+  bugSignature?: ValueOrFunction<string>;
+
+  /**
+   * Custom function to generate reproduction steps.
+   * Can be a static string or a function that resolves dynamically.
+   * Default: Uses test location, status and error details
+   */
+  reproSteps?: ValueOrFunction<string>;
+
+  /**
+   * Whether to allow creation of area paths if they don't exist.
+   * Can be a static boolean or a function that resolves dynamically.
+   * Default: true
+   */
+  allowAreaPathCreation?: ValueOrFunction<boolean>;
 }

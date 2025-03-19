@@ -36,6 +36,9 @@ class PlaywrightAzureBugReporter implements Reporter {
   private assignedTo?: ValueOrFunction<string>;
   private severity: ValueOrFunction<string>;
   private bugCreationPolicy: ValueOrFunction<BugCreationPolicy>;
+  private bugSignature: ValueOrFunction<string>;
+  private reproSteps: ValueOrFunction<string>;
+  private allowAreaPathCreation: ValueOrFunction<boolean>;
 
   constructor(config: AzureBugReporterConfig) {
     const { organization, project, token, areaPath } = config;
@@ -65,6 +68,20 @@ class PlaywrightAzureBugReporter implements Reporter {
     this.assignedTo = config.assignedTo || undefined;
     this.severity = config.severity || "3 - Medium";
     this.bugCreationPolicy = config.bugCreationPolicy || "if-none-open";
+    this.bugSignature = config.bugSignature || ((test) => test.title);
+    this.reproSteps =
+      config.reproSteps ||
+      ((test, result) =>
+        `
+        <div>
+          <b>Test File:</b> ${test.location?.file}<br>
+          <b>Line:</b> ${test.location?.line}<br>
+          <b>Status:</b> ${result.status}<br>
+          <b>Error:</b> ${result.error?.message || "N/A"}<br>
+          <b>Stack:</b><br><pre>${result.error?.stack || "N/A"}</pre>
+        </div>
+      `.trim());
+    this.allowAreaPathCreation = config.allowAreaPathCreation ?? true;
   }
 
   onBegin(config: FullConfig, suite: Suite) {}
@@ -86,6 +103,9 @@ class PlaywrightAzureBugReporter implements Reporter {
         resolveValue(this.iterationPath, test, result),
         resolveValue(this.severity, test, result),
         resolveValue(this.bugCreationPolicy, test, result),
+        resolveValue(this.bugSignature, test, result),
+        resolveValue(this.reproSteps, test, result),
+        resolveValue(this.allowAreaPathCreation, test, result),
         resolveValue(this.assignedTo, test, result)
       );
 
