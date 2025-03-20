@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as fs from "fs";
+import * as path from "path";
 import { getAuthHeader } from "./auth-utils";
 
 export async function uploadAttachment(
@@ -9,9 +10,11 @@ export async function uploadAttachment(
   attachment: any
 ): Promise<string> {
   const fileContent = fs.readFileSync(attachment.path);
+  const fileName = path.basename(attachment.path);
+
   const response = await axios.post(
     `https://dev.azure.com/${organization}/${project}/_apis/wit/attachments?fileName=${encodeURIComponent(
-      attachment.name
+      fileName
     )}&api-version=7.0`,
     fileContent,
     {
