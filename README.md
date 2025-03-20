@@ -2,7 +2,7 @@
 
 A custom reporter for Playwright that automatically creates bugs in Azure DevOps when tests fail.
 
-[![npm version](https://badge.fury.io/js/@solvexus%2Fplaywright-azure-bug-reporter.svg)](https://www.npmjs.com/package/@solvexus/playwright-azure-bug-reporter)
+[![npm version](https://img.shields.io/npm/v/@solvexus/playwright-azure-bug-reporter.svg)](https://www.npmjs.com/package/@solvexus/playwright-azure-bug-reporter)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
 [![Playwright](https://img.shields.io/badge/Playwright-1.51-green.svg)](https://playwright.dev)
