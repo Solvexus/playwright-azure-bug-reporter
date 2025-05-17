@@ -147,4 +147,11 @@ export interface AzureBugReporterConfig {
    * Default: true
    */
   allowAreaPathCreation?: ValueOrFunction<boolean>;
+
+  /**
+   * The maximum number of bugs that can be created in one test run.
+   * Can be a static number or a function that resolves dynamically.
+   * Default: 5
+   */
+  maximumNumberOfBugs?: ValueOrFunction<number>;
 }

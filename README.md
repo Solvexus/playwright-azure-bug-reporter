@@ -75,6 +75,7 @@ For more information about configuring reporters in Playwright, see the [Playwri
 | `allowAreaPathCreation`    | `boolean \| Function`             |          | `true`                                                | Whether to create area paths if they don't exist                 |
 | `uploadAttachments`        | `boolean \| Function`             |          | `false`                                               | Whether to upload test attachments to bugs                       |
 | `attachmentsType`          | `string[] \| Function`            |          | `['screenshot','video','log']`                        | Types of attachments to include                                  |
+| `maximumNumberOfBugs`      | `number \| Function`              |          | `5`                                                   | Maximum number of bugs that can be created in one test run       |
 
 \* Example of custom HTML repro steps:
 
@@ -185,7 +186,7 @@ Matching is determined using the `bugSignature` field, which uniquely identifies
 
 If the `Custom.BugSignature` field does not exist in your Azure DevOps project, the reporter will automatically create it (unless you disable this with `allowFieldCreation: false`).
 
-> **Note:** The automatically created field is hidden by default. To make it visible in your bug layout, follow [Microsoft’s instructions to show custom fields](https://learn.microsoft.com/en-us/azure/devops/organizations/settings/work/add-custom-field?view=azure-devops#add-a-field).
+> **Note:** The automatically created field is hidden by default. To make it visible in your bug layout, follow [Microsoft's instructions to show custom fields](https://learn.microsoft.com/en-us/azure/devops/organizations/settings/work/add-custom-field?view=azure-devops#add-a-field).
 
 ### Area Paths
 
@@ -217,6 +218,23 @@ Iteration paths define sprints/milestones. Supported formats:
   iterationPath: "MyProject\\Release 1\\Sprint 2" // Custom path
 }
 ```
+
+### Maximum Number of Bugs
+
+You can limit the number of bugs created in a single test run using the `maximumNumberOfBugs` option:
+
+```typescript
+{
+  // Limit to 10 bugs per test run
+  maximumNumberOfBugs: 10,
+  
+  // Or use a function to determine the limit dynamically
+  maximumNumberOfBugs: (test, result) => 
+    process.env.NODE_ENV === 'production' ? 5 : 20
+}
+```
+
+When the limit is reached, the reporter will log a message indicating that the maximum number of bugs has been reached and skip creating bugs for any subsequent test failures.
 
 ## Project Structure
 

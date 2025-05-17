@@ -39,6 +39,8 @@ class PlaywrightAzureBugReporter implements Reporter {
   private bugSignature: ValueOrFunction<string>;
   private reproSteps: ValueOrFunction<string>;
   private allowAreaPathCreation: ValueOrFunction<boolean>;
+  private maximumNumberOfBugs: ValueOrFunction<number>;
+  private bugsCreated: number = 0;
 
   constructor(config: AzureBugReporterConfig) {
     const { organization, project, token, areaPath } = config;
@@ -82,6 +84,7 @@ class PlaywrightAzureBugReporter implements Reporter {
         </div>
       `.trim());
     this.allowAreaPathCreation = config.allowAreaPathCreation ?? true;
+    this.maximumNumberOfBugs = config.maximumNumberOfBugs ?? 5;
   }
 
   onBegin(config: FullConfig, suite: Suite) {}
@@ -90,6 +93,13 @@ class PlaywrightAzureBugReporter implements Reporter {
 
   onTestEnd(test: TestCase, result: TestResult) {
     if (result.status !== "passed") {
+      const maxBugs = resolveValue(this.maximumNumberOfBugs, test, result);
+      
+      if (this.bugsCreated >= maxBugs) {
+        console.log(`Maximum number of bugs (${maxBugs}) reached. Skipping bug creation for test: ${test.title}`);
+        return;
+      }
+      
       const bugPoster = new BugPoster(
         resolveValue(this.organization, test, result),
         resolveValue(this.project, test, result),
@@ -111,6 +121,9 @@ class PlaywrightAzureBugReporter implements Reporter {
 
       const promise = bugPoster
         .postBug(test, result)
+        .then(() => {
+          this.bugsCreated++;
+        })
         .catch((e) => console.error("Bug posting failed:", e));
       this.pendingPromises.push(promise);
     }
