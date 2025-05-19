@@ -92,7 +92,10 @@ class PlaywrightAzureBugReporter implements Reporter {
   onTestBegin(test: TestCase, result: TestResult) {}
 
   onTestEnd(test: TestCase, result: TestResult) {
-    if (result.status !== "passed") {
+    const isFailure = result.status !== "passed" && result.status !== "skipped";
+    const isFinalAttempt = result.retry === test.retries;
+
+    if (isFailure && isFinalAttempt) {
       const maxBugs = resolveValue(this.maximumNumberOfBugs, test, result);
       
       if (this.bugsCreated >= maxBugs) {
